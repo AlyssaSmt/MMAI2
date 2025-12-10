@@ -1,0 +1,23 @@
+# Python venv
+.venv/
+venv/
+
+# macOS / Windows / System
+.DS_Store
+Thumbs.db
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Modelle
+*.h5
+*.keras
+*.pth
+
+# Daten
+data/
+datasets/
+
+# FastAPI Uvicorn Logs
+*.log
