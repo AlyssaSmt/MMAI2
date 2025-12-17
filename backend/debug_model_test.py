@@ -7,10 +7,10 @@ import tensorflow as tf
 IMG_SIZE = 64
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / "models" / "quickdraw_cnn.h5"
+MODEL_PATH = BASE_DIR / "models" / "quickdraw_cnn.keras"
 CLASSES_PATH = BASE_DIR / "models" / "class_indices.json"
 
-TEST_IMAGE = BASE_DIR / "data" / "images" / "full_simplified_car" / "full_simplified_car_00010.png"
+TEST_IMAGE = BASE_DIR / "data" / "images" / "full_simplified_sun" / "full_simplified_sun_00006.png"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 
