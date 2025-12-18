@@ -6,6 +6,9 @@ bash:
 2. .venv\Scripts\activate  (mac: source .venv/bin/activate)
 
 3. Abhängigkeiten installieren
+
+pip install -r requirements.txt
+
     pip install tensorflow fastapi uvicorn pillow numpy python-multipart
     pip install scikit-learn
 

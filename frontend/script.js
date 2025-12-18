@@ -2,16 +2,35 @@
 // Wörter (MÜSSEN Klassen des Modells sein!)
 // ======================
 const WORDS = [
-  "cat",
-  "cup",
+  "canoe",
   "car",
-  "sun",
+  "cat",
+  "circle",
+  "cup",
+  "door",
   "eye",
+  "fork",
+  "hexagon",
   "house",
+  "ladder",
+  "leg",
+  "line",
+  "lipstick",
+  "mountain",
   "pants",
-  "tree",
+  "pear",
+  "pillow",
+  "shovel",
+  "spoon",
+  "square",
+  "stairs",
   "strawberry",
-  "wine glass"
+  "sun",
+  "swing set",
+  "tree",
+  "triangle",
+  "wine glass",
+  "zigzag"
 ];
 
 // ======================
