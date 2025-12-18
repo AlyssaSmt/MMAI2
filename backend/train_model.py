@@ -16,8 +16,8 @@ MODELS_DIR.mkdir(exist_ok=True)
 # Parameter
 # =========================
 IMG_SIZE = 64
-BATCH_SIZE = 32
-EPOCHS = 40
+BATCH_SIZE = 64
+EPOCHS = 25
 AUTOTUNE = tf.data.AUTOTUNE
 SEED = 42
 

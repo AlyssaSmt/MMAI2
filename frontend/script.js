@@ -2,35 +2,16 @@
 // Wörter (MÜSSEN Klassen des Modells sein!)
 // ======================
 const WORDS = [
-  "canoe",
-  "car",
   "cat",
-  "circle",
   "cup",
-  "door",
-  "eye",
-  "fork",
-  "hexagon",
-  "house",
-  "ladder",
-  "leg",
-  "line",
-  "lipstick",
-  "mountain",
-  "pants",
-  "pear",
-  "pillow",
-  "shovel",
-  "spoon",
-  "square",
-  "stairs",
-  "strawberry",
+  "car",
   "sun",
-  "swing set",
+  "eye",
+  "house",
+  "pants",
   "tree",
-  "triangle",
-  "wine glass",
-  "zigzag"
+  "strawberry",
+  "wine glass"
 ];
 
 // ======================
@@ -54,6 +35,10 @@ const predictionSpan = document.getElementById("prediction");
 const confidenceSpan = document.getElementById("confidence");
 const topList = document.getElementById("top-list");
 
+const captionText = document.getElementById("caption-text");
+const captionConf = document.getElementById("caption-conf");
+const captionTop = document.getElementById("caption-top");
+
 const galleryDiv = document.getElementById("gallery");
 
 const penBtn = document.getElementById("pen-btn");
@@ -65,16 +50,28 @@ const eraserBtn = document.getElementById("eraser-btn");
 let targetWord = null;
 let drawing = false;
 let hasDrawn = false;
+
 let lastImageDataUrl = null;
 let lastConfidence = null;
+
+let lastCaptionText = null;
+let lastCaptionConfidence = null;
+
 let mode = "pen"; // "pen" | "eraser"
 let lastPredictTime = 0;
-
 
 // ======================
 // Canvas Setup
 // ======================
 ctx.lineCap = "round";
+resetCanvas();
+
+function resetCanvas() {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  setPen();
+}
 
 // ======================
 // Zeichenmodi
@@ -89,7 +86,6 @@ function setPen() {
 function setEraser() {
   mode = "eraser";
   ctx.globalCompositeOperation = "destination-out";
-  ctx.strokeStyle = "rgba(0,0,0,1)";
   ctx.lineWidth = 24;
 }
 
@@ -135,19 +131,25 @@ canvas.addEventListener("mouseleave", () => {
 canvas.addEventListener("mousemove", draw);
 
 clearBtn.addEventListener("click", () => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  resetCanvas();
 
   predictionSpan.textContent = "–";
   confidenceSpan.textContent = "–";
   topList.innerHTML = "";
 
+  captionText.textContent = "–";
+  captionConf.textContent = "–";
+  captionTop.innerHTML = "";
+
   saveBtn.style.display = "none";
+
   lastImageDataUrl = null;
   lastConfidence = null;
+  lastCaptionText = null;
+  lastCaptionConfidence = null;
   hasDrawn = false;
 
   chooseNewWord();
-  setPen();
 });
 
 predictBtn.addEventListener("click", maybePredict);
@@ -160,9 +162,7 @@ eraserBtn.addEventListener("click", setEraser);
 function draw(e) {
   if (!drawing) return;
 
-  if (mode === "pen") {
-    hasDrawn = true;
-  }
+  if (mode === "pen") hasDrawn = true;
 
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -172,17 +172,16 @@ function draw(e) {
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x, y);
-  
+
   const now = Date.now();
   if (mode === "pen" && now - lastPredictTime > 400) {
     lastPredictTime = now;
     maybePredict();
-}
-
+  }
 }
 
 // ======================
-// Ink-Menge (KORRIGIERT!)
+// Ink-Menge
 // ======================
 function getInkAmount() {
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -194,16 +193,13 @@ function getInkAmount() {
     const b = data[i + 2];
     const a = data[i + 3];
 
-    // nur sichtbare, dunkle Pixel zählen
-    if (a > 200 && (r + g + b) < 600) {
-      count++;
-    }
+    if (a > 200 && (r + g + b) < 600) count++;
   }
   return count;
 }
 
 // ======================
-// Snapshot mit weißem Hintergrund (EXTREM WICHTIG)
+// Snapshot mit weißem Hintergrund
 // ======================
 function snapshotCanvas() {
   const tmp = document.createElement("canvas");
@@ -211,15 +207,26 @@ function snapshotCanvas() {
   tmp.height = canvas.height;
 
   const tctx = tmp.getContext("2d");
-
-  // Weißer Hintergrund
   tctx.fillStyle = "white";
   tctx.fillRect(0, 0, tmp.width, tmp.height);
-
-  // Zeichnung drüber
   tctx.drawImage(canvas, 0, 0);
 
   return tmp.toDataURL("image/png");
+}
+
+// ======================
+// Caption (CLIP)
+// ======================
+async function fetchCaption(dataUrl) {
+  const formData = new FormData();
+  formData.append("image_base64", dataUrl);
+
+  const response = await fetch("http://127.0.0.1:8001/caption", {
+    method: "POST",
+    body: formData
+  });
+
+  return await response.json();
 }
 
 // ======================
@@ -230,10 +237,16 @@ async function maybePredict() {
     predictionSpan.textContent = "noch zu wenig gezeichnet";
     confidenceSpan.textContent = "";
     topList.innerHTML = "";
+
+    captionText.textContent = "–";
+    captionConf.textContent = "–";
+    captionTop.innerHTML = "";
     return;
   }
 
-  const dataUrl = snapshotCanvas(); 
+  const dataUrl = snapshotCanvas();
+
+  // -------- CNN --------
   const formData = new FormData();
   formData.append("image_base64", dataUrl);
 
@@ -244,6 +257,32 @@ async function maybePredict() {
 
   const result = await response.json();
   updateUI(result);
+
+  // -------- CLIP --------
+  try {
+    const captionResult = await fetchCaption(dataUrl);
+
+    captionText.textContent = captionResult.caption;
+    captionConf.textContent =
+      Math.round(captionResult.confidence * 100) + "%";
+
+    lastCaptionText = captionResult.caption;
+    lastCaptionConfidence = captionResult.confidence;
+
+    captionTop.innerHTML = "";
+    captionResult.top.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent =
+        `${item.caption} (${Math.round(item.confidence * 100)}%)`;
+      captionTop.appendChild(li);
+    });
+
+  } catch (err) {
+    captionText.textContent = "Caption nicht verfügbar";
+    captionConf.textContent = "";
+    captionTop.innerHTML = "";
+    console.error(err);
+  }
 }
 
 // ======================
@@ -259,13 +298,18 @@ function updateUI(result) {
 
   let status = "";
 
-  if (prediction === targetWord && conf >= 0.35) {
+  if (
+    prediction === targetWord &&
+    conf >= 0.35 &&
+    lastCaptionText !== null &&
+    lastCaptionConfidence !== null
+  ) {
     status = "✅ richtig!";
     lastImageDataUrl = snapshotCanvas();
     lastConfidence = conf;
     saveBtn.style.display = "inline-block";
   } else if (conf < 0.25) {
-    status = "??? noch unsicher";
+    status = "unsicher";
   } else {
     status = "❌ falsch";
   }
@@ -274,9 +318,10 @@ function updateUI(result) {
   confidenceSpan.textContent = Math.round(conf * 100) + "%";
 
   topList.innerHTML = "";
-  (result.top || []).forEach(item => {
+  result.top.forEach(item => {
     const li = document.createElement("li");
-    li.textContent = `${item.label}: ${Math.round(item.confidence * 100)}%`;
+    li.textContent =
+      `${item.label}: ${Math.round(item.confidence * 100)}%`;
     topList.appendChild(li);
   });
 }
@@ -287,19 +332,36 @@ function updateUI(result) {
 saveBtn.addEventListener("click", () => {
   if (!lastImageDataUrl) return;
 
-  saveCorrectDrawing(lastImageDataUrl, targetWord, lastConfidence);
+  saveCorrectDrawing(
+    lastImageDataUrl,
+    targetWord,
+    lastConfidence,
+    lastCaptionText,
+    lastCaptionConfidence
+  );
 
   saveBtn.style.display = "none";
   lastImageDataUrl = null;
   lastConfidence = null;
+  lastCaptionText = null;
+  lastCaptionConfidence = null;
 });
 
 // ======================
 // Galerie
 // ======================
-function saveCorrectDrawing(image, label, confidence) {
+function saveCorrectDrawing(image, label, confidence, caption, captionConfidence) {
   const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  const entry = { image, label, confidence, time: Date.now() };
+
+  const entry = {
+    image,
+    label,
+    confidence,
+    caption,
+    captionConfidence,
+    time: Date.now()
+  };
+
   stored.push(entry);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
   addImageToGallery(entry);
@@ -310,7 +372,7 @@ function loadGallery() {
   stored.forEach(addImageToGallery);
 }
 
-function addImageToGallery({ image, label, confidence, time }) {
+function addImageToGallery({ image, label, confidence, caption, captionConfidence, time }) {
   const wrapper = document.createElement("div");
   wrapper.className = "gallery-item";
 
@@ -318,15 +380,23 @@ function addImageToGallery({ image, label, confidence, time }) {
   img.src = image;
   img.title = `${label} – ${Math.round(confidence * 100)}%`;
 
+  const captionEl = document.createElement("div");
+  captionEl.className = "gallery-caption";
+  captionEl.textContent = caption || "–";
+
+  const captionConfEl = document.createElement("div");
+  captionConfEl.className = "gallery-confidence";
+  captionConfEl.textContent =
+    captionConfidence ? Math.round(captionConfidence * 100) + "%" : "";
+
   const del = document.createElement("button");
   del.textContent = "×";
-  del.title = "Bild löschen";
   del.onclick = () => {
     deleteImage(time);
     wrapper.remove();
   };
 
-  wrapper.append(img, del);
+  wrapper.append(img, captionEl, captionConfEl, del);
   galleryDiv.appendChild(wrapper);
 }
 

@@ -6,11 +6,12 @@ bash:
 2. .venv\Scripts\activate  (mac: source .venv/bin/activate)
 
 3. Abhängigkeiten installieren
-
-pip install -r requirements.txt
-
     pip install tensorflow fastapi uvicorn pillow numpy python-multipart
     pip install scikit-learn
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    pip install ftfy regex tqdm
+    pip install git+https://github.com/openai/CLIP.git
+
 
 4. NDJSON → Bilder konvertieren
     cd backend
@@ -20,6 +21,7 @@ pip install -r requirements.txt
     python train_model.py
 
 6. Backend starten (FastAPI)
+    cd backend
     uvicorn main:app --reload --port 8001
 
 Test (optional):
@@ -29,6 +31,11 @@ Test (optional):
 7. Frontend starten
     frontend/index.html
 
+
+
+open vocabulary
+ganze clip library verwenden
+website verbessern, das es genauer/verständlicher ist
 
 
 
