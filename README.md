@@ -1,5 +1,8 @@
 # MMAI
 
+Zweites Projekt mit ca. 30 Begriffen
+Funktioniert nicht super gut, ist bei meinem kleinen projekt schon leicht überfordert.
+
 bash:
 1. Virtuelle Umgebung erstellen:
     python -m venv .venv
