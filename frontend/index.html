@@ -2,38 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Montagsmaler KI</title>
+  <title>🎨 Montagsmaler KI</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Mini-CSS für Galerie (kann auch in style.css) -->
-  <style>
-    .layout {
-      display: flex;
-      gap: 30px;
-      align-items: flex-start;
-    }
-
-    .left {
-      flex: 0 0 auto;
-    }
-
-    .right {
-      flex: 1;
-    }
-
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 80px);
-      gap: 10px;
-    }
-
-    .gallery img {
-      width: 80px;
-      height: 80px;
-      background: white;
-      border: 1px solid #ccc;
-    }
-  </style>
 </head>
 
 <body>
@@ -44,42 +14,45 @@
     <span id="target-word">–</span>
   </p>
 
-  <!-- ================= Layout ================= -->
   <div class="layout">
 
-    <!-- ===== Linke Seite: Canvas + Steuerung ===== -->
+    <!-- LINKER BEREICH -->
     <div class="left">
       <canvas id="canvas" width="400" height="400"></canvas>
 
       <div class="buttons">
-        <button id="clear">🧹 Löschen/neue Kategorie</button>
+        <button id="clear">🧹 Löschen / Neues Wort</button>
         <button id="predict">🤖 KI raten lassen</button>
         <button id="pen-btn">✏️ Stift</button>
         <button id="eraser-btn">🧽 Radiergummi</button>
       </div>
 
-
       <div id="result">
-        <h3>🤖 KI-Vermutung</h3>
-        <button id="save-btn" style="display:none;">
-          💾 Bild speichern
-        </button>
-
+        <h3>🤖 Klassifikation (CNN)</h3>
         <p>
           <strong>Top-1:</strong>
           <span id="prediction">–</span>
           (<span id="confidence">–</span>)
         </p>
-
-        <h4>Weitere Vorschläge</h4>
         <ul id="top-list"></ul>
+
+        <h3>📝 Caption (CLIP)</h3>
+        <p>
+          <strong>Beschreibung:</strong>
+          <span id="caption-text">–</span>
+          (<span id="caption-conf">–</span>)
+        </p>
+        <ul id="caption-top"></ul>
+
+        <button id="save-btn" style="display:none;">
+          💾 Bild speichern
+        </button>
       </div>
     </div>
 
-    <!-- ===== Rechte Seite: Galerie ===== -->
+    <!-- RECHTER BEREICH -->
     <div class="right">
-      <h3>✅ Richtig erkannt</h3>
-      <p>Diese Zeichnungen wurden von der KI korrekt erkannt:</p>
+      <h3>✅ Gespeicherte Zeichnungen</h3>
       <div id="gallery" class="gallery"></div>
     </div>
 
