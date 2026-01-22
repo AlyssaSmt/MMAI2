@@ -1,25 +1,3 @@
-"""
-Konvertiert QuickDraw NDJSON-Dateien zu PNG-Bildern (64x64).
-
-✔ erkennt automatisch, WO gemalt wurde
-✔ croppt auf den gemalten Bereich (Bounding Box)
-✔ zentriert die Zeichnung
-✔ fügt Padding hinzu
-✔ robust gegen:
-  - leere Zeichnungen
-  - Ein-Punkt-Strokes
-  - Float-Koordinaten
-  - kaputte NDJSON-Zeilen
-
-Erwartete Struktur:
-backend/
- ├─ data/
- │   ├─ ndjson/
- │   │   ├─ full_raw_arm.ndjson
- │   │   └─ ...
- │   └─ images/
-"""
-
 import json
 from pathlib import Path
 from PIL import Image, ImageDraw
@@ -34,17 +12,14 @@ OUT_DIR = BASE_DIR / "data" / "images"
 # -----------------------------
 # Parameter
 # -----------------------------
-OUTPUT_SIZE = 64      # Zielgröße für CNN
-PADDING = 10          # Rand um die Zeichnung
-LINE_WIDTH = 6        # Strichdicke
-MAX_IMAGES = 1500     # pro Klasse (WICHTIG: für ALLE Klassen gleich!)
+OUTPUT_SIZE = 64      
+PADDING = 10        
+LINE_WIDTH = 6      
+MAX_IMAGES = 1500     
 
-CANVAS_LIMIT = 255    # QuickDraw Koordinatenbereich (0–255)
+CANVAS_LIMIT = 255
 
 
-# -----------------------------
-# Kernfunktion: Zeichnen + Crop
-# -----------------------------
 def draw_strokes(strokes):
     all_x, all_y = [], []
 
@@ -58,15 +33,12 @@ def draw_strokes(strokes):
         all_x.extend([int(x) for x in xs])
         all_y.extend([int(y) for y in ys])
 
-    # Falls nichts Sinnvolles gemalt wurde
     if len(all_x) < 2 or len(all_y) < 2:
         return Image.new("L", (OUTPUT_SIZE, OUTPUT_SIZE), 255)
 
-    # Bounding Box
     min_x, max_x = min(all_x), max(all_x)
     min_y, max_y = min(all_y), max(all_y)
 
-    # Padding + Begrenzen
     min_x = max(0, min_x - PADDING)
     min_y = max(0, min_y - PADDING)
     max_x = min(CANVAS_LIMIT, max_x + PADDING)
@@ -81,7 +53,6 @@ def draw_strokes(strokes):
     img = Image.new("L", (width, height), 255)
     draw = ImageDraw.Draw(img)
 
-    # Striche relativ zur Bounding Box zeichnen
     for stroke in strokes:
         if len(stroke) < 2:
             continue
@@ -131,7 +102,6 @@ def convert_file(path: Path):
                 img = draw_strokes(data["drawing"])
                 img.save(out_dir / f"{class_name}_{i:05}.png")
             except Exception as e:
-                # kaputte Zeilen einfach überspringen
                 continue
 
 

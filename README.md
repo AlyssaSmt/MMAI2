@@ -1,65 +1,83 @@
-# MMAI
+# MMAI2 – Montagsmaler mit KI (CNN + CLIP)
 
-Zweites Projekt mit ca. 30 Begriffen
-Funktioniert nicht super gut, ist bei meinem kleinen projekt schon leicht überfordert.
+MMAI2 ist die zweite Version des Projekts *Montagsmaler mit KI* und baut direkt auf MMAI auf.  
+Neben einem selbst trainierten **CNN-Modell** wird hier zusätzlich ein **CLIP-Modell** eingesetzt, um **Zero-Shot Recognition** zu ermöglichen.
 
-bash:
-1. Virtuelle Umgebung erstellen:
-    python -m venv .venv
-2. .venv\Scripts\activate  (mac: source .venv/bin/activate)
+Ziel des Projekts ist es, die Grenzen eines klassischen CNNs bei einer größeren Anzahl an Klassen zu untersuchen und dieses mit einem vortrainierten Vision-Language-Modell zu vergleichen.
 
-3. Abhängigkeiten installieren
-    pip install tensorflow fastapi uvicorn pillow numpy python-multipart
-    pip install scikit-learn
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-    pip install ftfy regex tqdm
-    pip install git+https://github.com/openai/CLIP.git
+---
+
+## Features
+
+- Zeichnen im Browser (HTML5 Canvas)
+- KI-Vorhersagen durch zwei Modelle:
+  - CNN (trainierte Klassen, ca. 30 Begriffe)
+  - CLIP (Text–Bild-Vergleich, Zero-Shot)
+- Anzeige von Konfidenzwerten
+- Top-1- und Top-3-Vorhersagen
+- Vergleich der Ergebnisse von CNN und CLIP
+- Speichern von Zeichnungen inkl. Modellvorhersagen
+- Galerie mit gespeicherten Ergebnissen
+
+---
+
+## Verwendete Technologien
+
+- **TensorFlow / Keras** – Training des CNN
+- **FastAPI** – Backend und Modell-Inferenz
+- **Python** – Datenverarbeitung, Training und Backend-Logik
+- **HTML / CSS / JavaScript** – Frontend
+- **Google Quick, Draw! Dataset** – Trainingsdaten für das CNN
+- **OpenAI CLIP** – Zero-Shot Image–Text Matching
+- **PyTorch** – Ausführung des CLIP-Modells
+
+---
+
+## Quick Draw! NDJSON-Dateien hinzufügen
+
+Die **NDJSON-Dateien des Quick Draw!-Datensatzes müssen manuell heruntergeladen und eingefügt werden**, da sie aus Größengründen nicht im Repository enthalten sind.
+
+Lade die gewünschten Kategorien von:  
+https://github.com/googlecreativelab/quickdraw-dataset
+
+Die verwendeten Kategorien müssen mit den in `class_indices.json` definierten Klassen übereinstimmen.  
+Es können auch andere Kategorien verwendet werden, sofern `class_indices.json` entsprechend angepasst wird.
+
+Die NDJSON-Dateien müssen im folgenden Ordner abgelegt werden:
 
 
-4. NDJSON → Bilder konvertieren
+
+## How to get started
+
+1. Virtuelle Umgebung erstellen und aktivieren
+```bash
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+source .venv/bin/activate    # macOS / Linux
+```
+2. Abhängigkeiten installieren
+```bash
+    pip install -r requirements.txt
+```
+3. NDJSON → Bilder konvertieren
+```bash
     cd backend
     python convert_ndjson_to_png.py
-
-5. KI trainieren
+```
+4. KI trainieren
+```bash
     python train_model.py
-
-6. Backend starten (FastAPI)
-    cd backend
-    uvicorn main:app --reload --port 8001
-
+```
+5. Backend starten (FastAPI)
+```bash
+    uvicorn backend.main:app --reload --port 8002
+```
 Test (optional):
     Browser öffnen:
-    http://127.0.0.1:8001/docs
+    http://127.0.0.1:8002/docs
 
-7. Frontend starten
+6. Frontend starten
+```bash
     frontend/index.html
+```
 
-
-
-open vocabulary
-ganze clip library verwenden
-website verbessern, das es genauer/verständlicher ist
-
-
-
-
-
-
-
-
-
-
-
-
-Musste neu trainieren, weil es immer alles als string bean gesehen hat, hab dann string bean gelöscht
-
-ebenfalls falsche daten benutzt, die nicht nur das bild sondern auch viel freiraum hatten.
-
-
-Nicht alle Klassen sind für kleine CNNs geeignet.
-Klassen mit ähnlicher geometrischer Struktur
-führten zu systematischen Fehlklassifikationen.
-Durch gezielte Klassenselektion mit hoher visueller Varianz
-konnte das Modell stabilisiert werden
-
-sehr limitiert, da es immer nur das gleiche errät

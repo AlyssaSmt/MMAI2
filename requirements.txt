@@ -10,11 +10,7 @@ Pillow==10.3.0
 fastapi==0.111.0
 uvicorn==0.29.0
 
-# --- QuickDraw Tools (Hilfsbibliothek) ---
+# --- QuickDraw Tools ---
 quickdraw==0.2.0
-
-# Optional: nützlich für spätere Schritte
-python-multipart==0.0.7
-
 
 python-multipart
